@@ -7,7 +7,7 @@ import time
 import os
 import threading
 import json
-
+from urllib.parse import urlparse
 with open('config.json', 'r') as f: DATA = json.load(f)
 def getenv(var): return os.environ.get(var) or DATA.get(var, None)
 
@@ -92,9 +92,9 @@ def save(client: pyrogram.client.Client, message: pyrogram.types.messages_and_me
 			bot.send_message(message.chat.id,"**Invalid Link**", reply_to_message_id=message.id)
 
 	# getting message
-	elif "https://t.me/" in message.text:
-
-		datas = message.text.split("/")
+	elif urlparse(message.text).hostname == "t.me":
+		path = urlparse(message.text).path
+		datas = path.split("/")
 		temp = datas[-1].replace("?single","").split("-")
 		fromID = int(temp[0].strip())
 		try: toID = int(temp[1].strip())
@@ -103,7 +103,7 @@ def save(client: pyrogram.client.Client, message: pyrogram.types.messages_and_me
 		for msgid in range(fromID, toID+1):
 
 			# private
-			if "https://t.me/c/" in message.text:
+			if path.startswith("/c/"):
 				chatid = int("-100" + datas[4])
 				
 				if acc is None:
